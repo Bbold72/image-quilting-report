@@ -15,14 +15,14 @@ This project implements the image quilting algorithm for texture synthesis and t
 
 Texture synthesis is the creation of a larger texture image from a small sample. The below results experiment with three methdods. Quilt random texture randomly samples square patches from the sample and tiles them to create the output image. This method is the simplest and produces the worst results.
 
-Quilt simple texture starts by sampling a random patch for the upper-left corner. Then subsequent sampled patches will overlap with part of the output image. The next selected patch minimized the sum of squared differences (SSD) of the overlapping regions of the existing and sampled patch. This method is a significant improvement over the previous method, however, it can produce noticeable seams since the overlapping regions may not match exactly.
+Quilt simple texture starts by sampling a random patch for the upper-left corner. Then subsequent sampled patches will overlap with part of the output image. The next selected patch is the one that minimizes the sum of squared differences (SSD) of the overlapping regions of the existing and sampled patch. This method is a significant improvement over the previous method, however, it can produce noticeable seams since the overlapping regions may not match exactly.
 
-Quilt cut texture incorporates the quilt cutting algorithm from [Efros and Freeman, 2001](https://www2.eecs.berkeley.edu/Research/Projects/CS/vision/papers/efros-siggraph01.pdf) that finds the minimal boundary cut in the overlapping region. This method produces more seamless blends between each sampled patch, and the overall result looks more natural. 
+Quilt cut texture incorporates the quilt cutting algorithm from [Efros and Freeman 2001](https://www2.eecs.berkeley.edu/Research/Projects/CS/vision/papers/efros-siggraph01.pdf) that finds the minimal boundary cut in the overlapping region. This method produces more seamless blends between each sampled patch, and the overall result looks more natural. 
 
 The full algorithm is as follows. For each overlapping patch in the output image:
 1. Compute the SSD (sum of squared differences) of pixel values in the overlapping portion of the existing output and sample.
 1. Select one sample patch that has a small cost (e.g. randomly pick one of K candidates)
-1. Find a cut through the sampled patch and overlapping region with existing output. Use this cut to create a mask that specifies which pixels to copy from sample patch.
+1. Find a cut, using Dijkstra's algorithm, through the sampled patch and overlapping region with existing output that represents the minimum cost boundary. Use this cut to create a mask that specifies which pixels to copy from sample patch.
 1. Copy masked pixels from sample image to corresponding pixel locations 
 in output image.
 
@@ -52,7 +52,7 @@ Parameters (all methods and results):
 
 ## Quilt Cut Details
 
-The below figure demonstrates how the quilt cut algorithm. The top-left image is the current output, the template is the part of the output to fill in, and the sampled patch is the patch that minimizes the SSD beteen overlapping region in the template. The second row shows the boundary cost for the overalapping region. Next, Dijkstra's algorithm is applied in the both the vertical and horizontal direction and then combined to find the minimal error boundary. Finally, in the bottom row, the quilt cut template are the pixels kept from the template (and in the current output), the quilt cut patch are the pixels kept from the sampled patch, and the new patch is the combination of the quilt cut template and patch. 
+The below figure demonstrates how the quilt cut algorithm works. The top-left image is the current output, the template is the part of the output to fill in, and the sampled patch is the patch that minimizes the SSD between overlapping regions in the template. The second row shows the boundary cost for the overalapping region. Next, Dijkstra's algorithm is applied in both the vertical and horizontal direction and then combined to find the minimal error boundary. Finally, in the bottom row, the quilt cut template are the pixels kept from the template (and in the current output), the quilt cut patch are the pixels kept from the sampled patch, and the new patch is the combination of the quilt cut template and patch. 
 
 ![""](output/quilt_cut_intermediate_steps_bricks.jpg "title")
 
@@ -70,7 +70,7 @@ The texture transfer method extends the texture synthesis algorithm by requiring
 
 ![""](output/texture_transfer-toast_girl.jpg "title")
 
-I modified the white background in the image of toast to green, so that the background would be selected during texture transfer.
+I modified the white background in the image of toast to green, so that the background would not be selected during texture transfer.
 
 [Back to top](#table-of-contents)
 <br>
